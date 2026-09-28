@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FitPulse — Дневник силовых тренировок и фиксации подходов</title>
+    <!-- Основные стили -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+</head>
+<body>
+    <!-- Верхняя сервисная панель управления для десктопа (позволяет переключать режим отображения) -->
+    <aside class="desktop-toolbar" id="desktopToolbar">
+        <div class="toolbar-content">
+            <span class="toolbar-title">📱 FitPulse Mobile Web App (Малащенко, ЛР №5)</span>
+            <div class="toolbar-actions">
+                <button class="toolbar-btn active" id="btnModeMobile" onclick="setAppViewMode('mobile')">Режим смартфона (390px)</button>
+                <button class="toolbar-btn" id="btnModeTablet" onclick="setAppViewMode('tablet')">Планшет (768px)</button>
+                <button class="toolbar-btn" id="btnModeFluid" onclick="setAppViewMode('fluid')">Адаптивный десктоп</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Основной каркас приложения -->
+    <div class="device-frame" id="deviceFrame">
+        <div class="app-container">
+            <!-- Шапка приложения -->
+            <header class="app-header">
+                <div class="header-brand">
+                    <img src="assets/logo.svg" alt="FitPulse Logo" class="brand-logo" width="36" height="36">
+                    <div class="brand-meta">
+                        <h1 class="brand-name">FitPulse</h1>
+                        <span class="brand-tagline">Силовой дневник атлета</span>
+                    </div>
+                </div>
+                <div class="header-user-status">
+                    <span class="status-indicator"></span>
+                    <span class="user-badge" id="headerUserBadge">Малащенко</span>
+                </div>
+            </header>
+
+            <!-- Основная навигация между 3 логическими экранами -->
+            <nav class="app-nav" aria-label="Основная навигация">
+                <button class="nav-tab active" data-screen="screen-auth" id="tab-auth" onclick="switchScreen('screen-auth')">
+                    <span class="nav-icon">🔑</span>
+                    <span class="nav-label">1. Вход</span>
+                </button>
+                <button class="nav-tab" data-screen="screen-workout" id="tab-workout" onclick="switchScreen('screen-workout')">
+                    <span class="nav-icon">🏋️</span>
+                    <span class="nav-label">2. Дневник</span>
+                </button>
+                <button class="nav-tab" data-screen="screen-stats" id="tab-stats" onclick="switchScreen('screen-stats')">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">3. Аналитика</span>
+                </button>
+            </nav>
+
+            <!-- Контейнер экранов -->
+            <main class="app-main">
+                
+                <!-- ============================================== -->
+                <!-- ЭКРАН 1: АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ (Вход)       -->
+                <!-- ============================================== -->
+                <section id="screen-auth" class="screen-view active">
+                    <div class="auth-card">
+                        <!-- Логотип и заголовок карточки входа -->
+                        <div class="auth-brand-center">
+                            <div class="auth-logo-wrapper">
+                                <img src="assets/logo.svg" alt="FitPulse Icon" class="auth-logo-img">
+                            </div>
+                            <h2 class="auth-title">FitPulse</h2>
+                            <p class="auth-subtitle">Дневник силовых тренировок и аналитики</p>
+                        </div>
+
+                        <!-- Переключатель: Вход в систему / Регистрация -->
+                        <div class="auth-segmented-control">
+                            <button type="button" class="segment-btn active" id="btnTabLogin" onclick="setAuthMode('login')">Вход в систему</button>
+                            <button type="button" class="segment-btn" id="btnTabRegister" onclick="setAuthMode('register')">Регистрация</button>
+                        </div>
+
+                        <!-- Форма входа (Активна по умолчанию) -->
+                        <form class="auth-form" id="loginForm" onsubmit="handleLoginSubmit(event)">
+                            <div class="form-group">
+                                <label for="loginEmail">Электронная почта (E-mail)</label>
+                                <input type="email" id="loginEmail" class="form-control" placeholder="alex.fit-tracker@mail.ru" value="alex.fit-tracker@mail.ru" required autocomplete="email">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="loginPassword">Пароль</label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" value="fitness2026" required autocomplete="current-password">
+                                    <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('loginPassword')" aria-label="Показать пароль">👁️</button>
+                                </div>
+                            </div>
+
+                            <div class="form-options">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="rememberMe" checked>
+                                    <span class="custom-checkbox"></span>
+                                    <span class="label-text">Запомнить меня</span>
+                                </label>
+                                <a href="#forgot" class="forgot-link" onclick="notifyUser('Ссылка для сброса пароля отправлена на ваш e-mail!')">Забыли пароль?</a>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block" id="btnLoginSubmit">
+                                <span>Войти в дневник тренировок</span>
+                                <span class="btn-arrow">→</span>
+                            </button>
+                        </form>
+
+                        <!-- Форма регистрации (скрыта по умолчанию) -->
+                        <form class="auth-form hidden" id="registerForm" onsubmit="handleRegisterSubmit(event)">
+                            <div class="form-group">
+                                <label for="regName">Имя атлета</label>
+                                <input type="text" id="regName" class="form-control" placeholder="Малащенко Вадим" value="Малащенко Вадим" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="regEmail">Электронная почта (E-mail)</label>
+                                <input type="email" id="regEmail" class="form-control" placeholder="athlete@fitpulse.ru" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="regGoal">Основная цель</label>
+                                <select id="regGoal" class="form-control form-select">
+                                    <option value="strength">Увеличение силовых показателей (Powerlifting)</option>
+                                    <option value="hypertrophy" selected>Набор мышечной массы (Bodybuilding)</option>
+                                    <option value="relief">Сушка и рельеф (Fat Loss)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-half">
+                                    <label for="regWeight">Вес (кг)</label>
+                                    <input type="number" id="regWeight" class="form-control" value="82" min="40" max="200" step="0.5">
+                                </div>
+                                <div class="form-group col-half">
+                                    <label for="regPassword">Пароль</label>
+                                    <input type="password" id="regPassword" class="form-control" placeholder="••••••••" required>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <span>Создать профиль атлета</span>
+                                <span class="btn-arrow">→</span>
+                            </button>
+                        </form>
+
+                        <!-- Разделитель соцсетей -->
+                        <div class="auth-divider">
+                            <span class="divider-text">или войти через сервис</span>
+                        </div>
+
+                        <!-- Социальные кнопки входа -->
+                        <div class="social-login-grid">
+                            <button type="button" class="social-btn" onclick="socialAuth('VK ID')">
+                                <span class="social-icon vk-icon">В</span>
+                                <span class="social-name">VK ID</span>
+                            </button>
+                            <button type="button" class="social-btn" onclick="socialAuth('Яндекс ID')">
+                                <span class="social-icon ya-icon">Я</span>
+                                <span class="social-name">Яндекс ID</span>
+                            </button>
+                            <button type="button" class="social-btn" onclick="socialAuth('Google')">
+                                <span class="social-icon g-icon">G</span>
+                                <span class="social-name">Google</span>
+                            </button>
+                        </div>
+
+                        <!-- Соглашение -->
+                        <p class="auth-terms">
+                            Создавая аккаунт, вы соглашаетесь с <a href="#terms" onclick="notifyUser('Пользовательское соглашение FitPulse')">Условиями сервиса</a>
+                        </p>
+                    </div>
+                </section>
+
+                <!-- ============================================================== -->
+                <!-- ЭКРАН 2: ДНЕВНИК ТРЕНИРОВКИ И ФИКСАЦИЯ ПОДХОДОВ               -->
+                <!-- ============================================================== -->
+                <section id="screen-workout" class="screen-view">
+                    <!-- Заголовок тренировки -->
+                    <div class="workout-header-card">
+                        <div class="workout-meta-top">
+                            <span class="workout-badge-program">СИЛОВОЙ МИКРОЦИКЛ</span>
+                            <span class="workout-date" id="currentDateStr">26 сентября 2026</span>
+                        </div>
+                        <h2 class="workout-title">Грудь + Трицепс (Базовый день)</h2>
+                        <div class="workout-tags">
+                            <span class="tag">#жим</span>
+                            <span class="tag">#гипертрофия</span>
+                            <span class="tag">#день1</span>
+                        </div>
+                    </div>
+
+                    <!-- Виджет отдыха между подходами (Rest Timer) -->
+                    <div class="rest-timer-card">
+                        <div class="timer-info">
+                            <span class="timer-label">⏱️ Таймер отдыха</span>
+                            <span class="timer-countdown" id="restTimerDisplay">01:30</span>
+                        </div>
+                        <div class="timer-controls">
+                            <button class="timer-btn timer-btn-primary" id="btnTimerToggle" onclick="toggleRestTimer()">Старт</button>
+                            <button class="timer-btn" onclick="addRestTimerTime(30)">+30с</button>
+                            <button class="timer-btn" onclick="resetRestTimer(90)">Сброс</button>
+                        </div>
+                    </div>
+
+                    <!-- Сводная плашка прогресса тренировки -->
+                    <div class="workout-stats-banner">
+                        <div class="stat-pill">
+                            <span class="pill-label">Тоннаж</span>
+                            <span class="pill-value"><strong id="statVolume">4 820</strong> кг</span>
+                        </div>
+                        <div class="stat-pill">
+                            <span class="pill-label">Подходы</span>
+                            <span class="pill-value"><strong id="statSetsCount">7</strong> / 10</span>
+                        </div>
+                        <div class="stat-pill">
+                            <span class="pill-label">Интенсивность</span>
+                            <span class="pill-value">RPE <strong>8.4</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Прогресс-бар выполнения тренировки -->
+                    <div class="workout-progress-wrapper">
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill" id="workoutProgressBar" style="width: 70%;"></div>
+                        </div>
+                        <span class="progress-bar-label" id="workoutProgressText">Прогресс объема: 70%</span>
+                    </div>
+
+                    <!-- Список упражнений с фиксацией подходов -->
+                    <div class="exercises-container" id="exercisesContainer">
+                        <!-- Упражнение 1 -->
+                        <article class="exercise-card">
+                            <div class="exercise-header">
+                                <div class="exercise-title-group">
+                                    <span class="exercise-num">1</span>
+                                    <div>
+                                        <h3 class="exercise-name">Жим штанги лёжа</h3>
+                                        <span class="exercise-desc">Горизонтальная скамья • База</span>
+                                    </div>
+                                </div>
+                                <span class="exercise-rest-tag">Отдых: 2-3 мин</span>
+                            </div>
+
+                            <div class="sets-table-wrapper">
+                                <table class="sets-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Сет</th>
+                                            <th>Вес (кг)</th>
+                                            <th>Повторы</th>
+                                            <th>RPE</th>
+                                            <th>Статус</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="setsBodyEx1">
+                                        <tr class="set-row completed">
+                                            <td><span class="set-index">1</span></td>
+                                            <td><span class="set-weight">80.0</span></td>
+                                            <td><span class="set-reps">10</span></td>
+                                            <td><span class="set-rpe">7.0</span></td>
+                                            <td>
+                                                <button class="set-check-btn checked" onclick="toggleSetCheck(this, 80, 10)" title="Отметить подход">✓</button>
+                                            </td>
+                                        </tr>
+                                        <tr class="set-row completed">
+                                            <td><span class="set-index">2</span></td>
+                                            <td><span class="set-weight">95.0</span></td>
+                                            <td><span class="set-reps">8</span></td>
+                                            <td><span class="set-rpe">8.0</span></td>
+                                            <td>
+                                                <button class="set-check-btn checked" onclick="toggleSetCheck(this, 95, 8)" title="Отметить подход">✓</button>
+                                            </td>
+                                        </tr>
+                                        <tr class="set-row completed">
+                                            <td><span class="set-index">3</span></td>
+                                            <td><span class="set-weight">100.0</span></td>
+                                            <td><span class="set-reps">6</span></td>
+                                            <td><span class="set-rpe">8.5</span></td>
+                                            <td>
+                                                <button class="set-check-btn checked" onclick="toggleSetCheck(this, 100, 6)" title="Отметить подход">✓</button>
+                                            </td>
+                                        </tr>
+                                        <tr class="set-row">
+                                            <td><span class="set-index">4</span></td>
+                                            <td><span class="set-weight">105.0</span></td>
+                                            <td><span class="set-reps">5</span></td>
+                                            <td><span class="set-rpe">9.0</span></td>
+                                            <td>
+                                                <button class="set-check-btn" onclick="toggleSetCheck(this, 105, 5)" title="Отметить подход">○</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </article>
+
+                        <!-- Упражнение 2 -->
+                        <article class="exercise-card">
+                            <div class="exercise-header">
+                                <div class="exercise-title-group">
+                                    <span class="exercise-num">2</span>
+                                    <div>
+                                        <h3 class="exercise-name">Жим гантелей на наклонной скамье</h3>
+                                        <span class="exercise-desc">Угол 30° • Верхний пучок грудных</span>
+                                    </div>
+                                </div>
+                                <span class="exercise-rest-tag">Отдых: 90 сек</span>
+                            </div>
+
+                            <div class="sets-table-wrapper">
+                                <table class="sets-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Сет</th>
+                                            <th>Вес (кг)</th>
+                                            <th>Повторы</th>
+                                            <th>RPE</th>
+                                            <th>Статус</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="setsBodyEx2">
+                                        <tr class="set-row completed">
+                                            <td><span class="set-index">1</span></td>
+                                            <td><span class="set-weight">32.0</span></td>
+                                            <td><span class="set-reps">10</span></td>
+                                            <td><span class="set-rpe">8.0</span></td>
+                                            <td>
+                                                <button class="set-check-btn checked" onclick="toggleSetCheck(this, 64, 10)" title="Отметить подход">✓</button>
+                                            </td>
+                                        </tr>
+                                        <tr class="set-row completed">
+                                            <td><span class="set-index">2</span></td>
+                                            <td><span class="set-weight">34.0</span></td>
+                                            <td><span class="set-reps">8</span></td>
+                                            <td><span class="set-rpe">8.5</span></td>
+                                            <td>
+                                                <button class="set-check-btn checked" onclick="toggleSetCheck(this, 68, 8)" title="Отметить подход">✓</button>
+                                            </td>
+                                        </tr>
+                                        <tr class="set-row">
+                                            <td><span class="set-index">3</span></td>
+                                            <td><span class="set-weight">34.0</span></td>
+                                            <td><span class="set-reps">8</span></td>
+                                            <td><span class="set-rpe">9.0</span></td>
+                                            <td>
+                                                <button class="set-check-btn" onclick="toggleSetCheck(this, 68, 8)" title="Отметить подход">○</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </article>
+
+                        <!-- Упражнение 3 -->
+                        <article class="exercise-card">
+                            <div class="exercise-header">
+                                <div class="exercise-title-group">
+                                    <span class="exercise-num">3</span>
+                                    <div>
+                                        <h3 class="exercise-name">Французский жим с EZ-штангой</h3>
+                                        <span class="exercise-desc">Изоляция трицепса • Лежа на скамье</span>
+                                    </div>
+                                </div>
+                                <span class="exercise-rest-tag">Отдых: 90 сек</span>
+                            </div>
+
+                            <div class="sets-table-wrapper">
+                                <table class="sets-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Сет</th>
+                                            <th>Вес (кг)</th>
+                                            <th>Повторы</th>
+                                            <th>RPE</th>
+                                            <th>Статус</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="setsBodyEx3">
+                                        <tr class="set-row completed">
+                                            <td><span class="set-index">1</span></td>
+                                            <td><span class="set-weight">40.0</span></td>
+                                            <td><span class="set-reps">12</span></td>
+                                            <td><span class="set-rpe">8.0</span></td>
+                                            <td>
+                                                <button class="set-check-btn checked" onclick="toggleSetCheck(this, 40, 12)" title="Отметить подход">✓</button>
+                                            </td>
+                                        </tr>
+                                        <tr class="set-row">
+                                            <td><span class="set-index">2</span></td>
+                                            <td><span class="set-weight">42.5</span></td>
+                                            <td><span class="set-reps">10</span></td>
+                                            <td><span class="set-rpe">8.5</span></td>
+                                            <td>
+                                                <button class="set-check-btn" onclick="toggleSetCheck(this, 42.5, 10)" title="Отметить подход">○</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </article>
+                    </div>
+
+                    <!-- Панель быстрой фиксации нового подхода -->
+                    <div class="quick-log-card">
+                        <div class="quick-log-header">
+                            <h4>⚡ Быстрая фиксация подхода</h4>
+                            <span class="quick-log-tip">Добавить выполненный сет</span>
+                        </div>
+                        <form id="quickLogForm" onsubmit="handleQuickLogSet(event)">
+                            <div class="form-group">
+                                <label for="quickExerciseSelect">Упражнение</label>
+                                <select id="quickExerciseSelect" class="form-control form-select">
+                                    <option value="1">1. Жим штанги лёжа</option>
+                                    <option value="2">2. Жим гантелей под углом</option>
+                                    <option value="3">3. Французский жим с EZ-штангой</option>
+                                </select>
+                            </div>
+
+                            <div class="log-steppers-grid">
+                                <!-- Степпер веса -->
+                                <div class="stepper-box">
+                                    <label class="stepper-label">Вес (кг)</label>
+                                    <div class="stepper-controls">
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('logWeightInput', -2.5)">-2.5</button>
+                                        <input type="number" id="logWeightInput" class="stepper-input" value="105.0" step="0.5" min="0">
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('logWeightInput', 2.5)">+2.5</button>
+                                    </div>
+                                </div>
+
+                                <!-- Степпер повторений -->
+                                <div class="stepper-box">
+                                    <label class="stepper-label">Повторы</label>
+                                    <div class="stepper-controls">
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('logRepsInput', -1)">-1</button>
+                                        <input type="number" id="logRepsInput" class="stepper-input" value="5" step="1" min="1">
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('logRepsInput', 1)">+1</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group rpe-select-group">
+                                <label for="logRpeInput">Шкала нагрузки (RPE): <span id="rpeValueLabel">8.5 / 10</span></label>
+                                <input type="range" id="logRpeInput" min="6.0" max="10.0" step="0.5" value="8.5" class="rpe-slider" oninput="updateRpeDisplay(this.value)">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <span>+ Зафиксировать подход</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Кнопка завершения тренировки -->
+                    <div class="finish-workout-box">
+                        <button type="button" class="btn btn-success btn-block" onclick="finishCurrentWorkout()">
+                            🏁 Завершить тренировку и сохранить
+                        </button>
+                    </div>
+                </section>
+
+                <!-- ============================================================== -->
+                <!-- ЭКРАН 3: АНАЛИТИКА, СТАТИСТИКА И ИСТОРИЯ СЕССИЙ               -->
+                <!-- ============================================================== -->
+                <section id="screen-stats" class="screen-view">
+                    <div class="stats-hero-card">
+                        <div class="stats-hero-top">
+                            <span class="stats-period-badge">СЕНТЯБРЬ 2026</span>
+                            <span class="stats-athlete-name">Малащенко Вадим</span>
+                        </div>
+                        <h2 class="stats-hero-title">Аналитика силового прогресса</h2>
+                        <p class="stats-hero-desc">Сводка тренировочного объема и динамика 1ПМ</p>
+                    </div>
+
+                    <!-- Сетка ключевых метрик (KPIs) -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <span class="kpi-icon">🏋️</span>
+                            <span class="kpi-value">42.8 т</span>
+                            <span class="kpi-label">Общий тоннаж за месяц</span>
+                            <span class="kpi-badge positive">+14% к августу</span>
+                        </div>
+
+                        <div class="kpi-card">
+                            <span class="kpi-icon">🎯</span>
+                            <span class="kpi-value">16</span>
+                            <span class="kpi-label">Завершено тренировок</span>
+                            <span class="kpi-badge neutral">100% плана</span>
+                        </div>
+
+                        <div class="kpi-card">
+                            <span class="kpi-icon">🥇</span>
+                            <span class="kpi-value">115 кг</span>
+                            <span class="kpi-label">Рекорд 1ПМ (Жим лёжа)</span>
+                            <span class="kpi-badge positive">+5 кг новый PR</span>
+                        </div>
+
+                        <div class="kpi-card">
+                            <span class="kpi-icon">⏳</span>
+                            <span class="kpi-value">68 мин</span>
+                            <span class="kpi-label">Средняя длительность</span>
+                            <span class="kpi-badge neutral">Отдых: 95с</span>
+                        </div>
+                    </div>
+
+                    <!-- Столбчатая диаграмма объемов нагрузок за неделю -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div>
+                                <h3 class="chart-title">Тоннаж по дням недели</h3>
+                                <span class="chart-sub">Общий объем: 27 820 кг за неделю</span>
+                            </div>
+                            <span class="chart-legend-badge">Сентябрь W4</span>
+                        </div>
+
+                        <div class="chart-bars-container">
+                            <div class="chart-column">
+                                <div class="bar-value">5.2 т</div>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="height: 65%;"></div>
+                                </div>
+                                <span class="bar-label">Пн</span>
+                                <span class="bar-tag">Грудь</span>
+                            </div>
+
+                            <div class="chart-column">
+                                <div class="bar-value">6.4 т</div>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="height: 80%;"></div>
+                                </div>
+                                <span class="bar-label">Вт</span>
+                                <span class="bar-tag">Спина</span>
+                            </div>
+
+                            <div class="chart-column rest-day">
+                                <div class="bar-value">0 т</div>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="height: 5%;"></div>
+                                </div>
+                                <span class="bar-label">Ср</span>
+                                <span class="bar-tag">Отдых</span>
+                            </div>
+
+                            <div class="chart-column">
+                                <div class="bar-value">7.9 т</div>
+                                <div class="bar-track">
+                                    <div class="bar-fill max" style="height: 100%;"></div>
+                                </div>
+                                <span class="bar-label">Чт</span>
+                                <span class="bar-tag">Ноги</span>
+                            </div>
+
+                            <div class="chart-column active-day">
+                                <div class="bar-value">4.8 т</div>
+                                <div class="bar-track">
+                                    <div class="bar-fill highlight" style="height: 60%;"></div>
+                                </div>
+                                <span class="bar-label">Пт</span>
+                                <span class="bar-tag">Сегодня</span>
+                            </div>
+
+                            <div class="chart-column">
+                                <div class="bar-value">3.5 т</div>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="height: 44%;"></div>
+                                </div>
+                                <span class="bar-label">Сб</span>
+                                <span class="bar-tag">Руки</span>
+                            </div>
+
+                            <div class="chart-column rest-day">
+                                <div class="bar-value">0 т</div>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="height: 5%;"></div>
+                                </div>
+                                <span class="bar-label">Вс</span>
+                                <span class="bar-tag">Отдых</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- История недавних тренировок -->
+                    <div class="history-card">
+                        <div class="history-header">
+                            <h3 class="history-title">История предыдущих тренировок</h3>
+                            <span class="history-count">3 недавние</span>
+                        </div>
+
+                        <div class="history-list">
+                            <div class="history-item">
+                                <div class="history-item-left">
+                                    <span class="history-date">24.09.2026</span>
+                                    <h4 class="history-name">Тяга и бицепс (Силовой день)</h4>
+                                    <span class="history-meta">14 подходов • Становая тяга 160 кг × 5</span>
+                                </div>
+                                <div class="history-item-right">
+                                    <span class="history-volume">6 400 кг</span>
+                                    <span class="history-time">⏱️ 72 мин</span>
+                                </div>
+                            </div>
+
+                            <div class="history-item">
+                                <div class="history-item-left">
+                                    <span class="history-date">22.09.2026</span>
+                                    <h4 class="history-name">Ноги и средняя дельта</h4>
+                                    <span class="history-meta">16 подходов • Присед со штангой 130 кг × 6</span>
+                                </div>
+                                <div class="history-item-right">
+                                    <span class="history-volume">7 900 кг</span>
+                                    <span class="history-time">⏱️ 80 мин</span>
+                                </div>
+                            </div>
+
+                            <div class="history-item">
+                                <div class="history-item-left">
+                                    <span class="history-date">19.09.2026</span>
+                                    <h4 class="history-name">Жим лёжа и руки</h4>
+                                    <span class="history-meta">12 подходов • Жим узким хватом 85 кг × 8</span>
+                                </div>
+                                <div class="history-item-right">
+                                    <span class="history-volume">5 100 кг</span>
+                                    <span class="history-time">⏱️ 60 мин</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+
+            <!-- Подвал приложения -->
+            <footer class="app-footer">
+                <div class="footer-inner">
+                    <p class="footer-copy">FitPulse Mobile Web Application &copy; 2026</p>
+                    <p class="footer-student">Разработка студента: <strong>Малащенко</strong> | ЛР №5</p>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Всплывающие уведомления (Toast) -->
+    <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+    <!-- Клиентский скрипт логики -->
+    <script src="js/app.js"></script>
+</body>
+</html>
